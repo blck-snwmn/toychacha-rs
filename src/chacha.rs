@@ -61,6 +61,7 @@ impl Chacha {
         let state = State::new(key, nonce, counter);
         Chacha { state }
     }
+
     fn block(&mut self) {
         let mut state = self.state.clone();
         for _ in 0..10 {
