@@ -1,3 +1,23 @@
+struct state {
+    x: [u32; 16],
+}
+
+impl state {
+    fn quarter_round(&mut self, ai: usize, bi: usize, ci: usize, di: usize) {
+        let a = self.x[ai];
+        let b = self.x[bi];
+        let c = self.x[ci];
+        let d = self.x[di];
+
+        let (a, b, c, d) = quarter_round(a, b, c, d);
+
+        self.x[ai] = a;
+        self.x[bi] = b;
+        self.x[ci] = c;
+        self.x[di] = d;
+    }
+}
+
 fn rotation_n(n: usize, x: u32) -> u32 {
     (x << n) | (x >> (32 - n))
 }
@@ -40,5 +60,27 @@ mod tests {
         assert_eq!(b, 0xcb1cf8ce);
         assert_eq!(c, 0x4581472e);
         assert_eq!(d, 0x5881c4bb);
+    }
+
+    #[test]
+    fn test_state_quarter_round() {
+        let mut s = state {
+            x: [
+                0x879531e0, 0xc5ecf37d, 0x516461b1, 0xc9a62f8a, 0x44c20ef3, 0x3390af7f, 0xd9fc690b,
+                0x2a5f714c, 0x53372767, 0xb00a5631, 0x974c541a, 0x359e9963, 0x5c971061, 0x3d631689,
+                0x2098d9d6, 0x91dbd320,
+            ],
+        };
+
+        s.quarter_round(2, 7, 8, 13);
+
+        let want = state {
+            x: [
+                0x879531e0, 0xc5ecf37d, 0xbdb886dc, 0xc9a62f8a, 0x44c20ef3, 0x3390af7f, 0xd9fc690b,
+                0xcfacafd2, 0xe46bea80, 0xb00a5631, 0x974c541a, 0x359e9963, 0x5c971061, 0xccc07c79,
+                0x2098d9d6, 0x91dbd320,
+            ],
+        };
+        assert_eq!(s.x, want.x);
     }
 }
