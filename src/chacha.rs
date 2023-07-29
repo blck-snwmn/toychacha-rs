@@ -1,3 +1,5 @@
+use byteorder::ByteOrder;
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 struct State {
     x: [u32; 16],
@@ -51,12 +53,22 @@ impl State {
         }
     }
 
-    fn block(&mut self) {
+    fn block(&mut self) -> [u8; 64] {
         let mut state = self.clone();
         for _ in 0..10 {
             state.inner_block();
         }
-        self.add(&state)
+        self.add(&state);
+
+        self.serialize()
+    }
+
+    fn serialize(&self) -> [u8; 64] {
+        let mut out = [0u8; 64];
+        for i in 0..16 {
+            byteorder::LittleEndian::write_u32(&mut out[4 * i..4 * (i + 1)], self.x[i]);
+        }
+        out
     }
 }
 
@@ -186,7 +198,8 @@ mod tests {
             ],
             1,
         );
-        c.block();
+        let out = c.block();
+
         let want = State {
             x: [
                 0xe4e7f110, 0x15593bd1, 0x1fdd0f50, 0xc47120a3, 0xc7f4d1c7, 0x0368c033, 0x9aaa2204,
@@ -195,5 +208,15 @@ mod tests {
             ],
         };
         assert_eq!(c.x, want.x);
+
+        let want = [
+            0x10, 0xf1, 0xe7, 0xe4, 0xd1, 0x3b, 0x59, 0x15, 0x50, 0x0f, 0xdd, 0x1f, 0xa3, 0x20,
+            0x71, 0xc4, 0xc7, 0xd1, 0xf4, 0xc7, 0x33, 0xc0, 0x68, 0x03, 0x04, 0x22, 0xaa, 0x9a,
+            0xc3, 0xd4, 0x6c, 0x4e, 0xd2, 0x82, 0x64, 0x46, 0x07, 0x9f, 0xaa, 0x09, 0x14, 0xc2,
+            0xd7, 0x05, 0xd9, 0x8b, 0x02, 0xa2, 0xb5, 0x12, 0x9c, 0xd1, 0xde, 0x16, 0x4e, 0xb9,
+            0xcb, 0xd0, 0x83, 0xe8, 0xa2, 0x50, 0x3c, 0x4e,
+        ];
+
+        assert_eq!(out, want)
     }
 }
