@@ -1,1 +1,1 @@
-mod chacha;
+pub mod chacha;

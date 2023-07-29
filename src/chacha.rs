@@ -93,17 +93,17 @@ fn quarter_round(a: u32, b: u32, c: u32, d: u32) -> (u32, u32, u32, u32) {
     (a, b, c, d)
 }
 
-struct ChaCha20 {
+pub struct ChaCha20 {
     key: [u8; 32],
     nonce: [u8; 12],
 }
 
 impl ChaCha20 {
-    fn new(key: [u8; 32], nonce: [u8; 12]) -> Self {
+    pub fn new(key: [u8; 32], nonce: [u8; 12]) -> Self {
         ChaCha20 { key, nonce }
     }
 
-    fn encrypt(&self, plaintext: &mut [u8], counter: u32) {
+    pub fn encrypt(&self, plaintext: &mut [u8], counter: u32) {
         let mut counter = counter;
 
         let mut hp = plaintext;
