@@ -3,6 +3,19 @@ struct State {
 }
 
 impl State {
+    fn new(key: [u8; 32], nonce: [u8; 12], counter: u32) -> Self {
+        let tkey: [u32; 8] = unsafe { std::mem::transmute(key) };
+        let tnonce: [u32; 3] = unsafe { std::mem::transmute(nonce) };
+        State {
+            x: [
+                0x61707865, 0x3320646e, 0x79622d32, 0x6b206574, // constants
+                tkey[0], tkey[1], tkey[2], tkey[3], tkey[4], tkey[5], tkey[6], tkey[7], // key
+                counter, //counter
+                tnonce[0], tnonce[1], tnonce[2], // nonce
+            ],
+        }
+    }
+
     fn quarter_round(&mut self, ai: usize, bi: usize, ci: usize, di: usize) {
         let a = self.x[ai];
         let b = self.x[bi];
@@ -29,6 +42,17 @@ impl State {
         self.quarter_round(1, 6, 11, 12);
         self.quarter_round(2, 7, 8, 13);
         self.quarter_round(3, 4, 9, 14);
+    }
+}
+
+struct Chacha {
+    state: State,
+}
+
+impl Chacha {
+    fn new(key: [u8; 32], nonce: [u8; 12], counter: u32) -> Self {
+        let state = State::new(key, nonce, counter);
+        Chacha { state }
     }
 }
 
@@ -120,5 +144,30 @@ mod tests {
             ],
         };
         assert_eq!(s.x, want.x);
+    }
+
+    #[test]
+    fn test_chacha_new() {
+        let c = Chacha::new(
+            [
+                0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d,
+                0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b,
+                0x1c, 0x1d, 0x1e, 0x1f,
+            ],
+            [
+                0x00, 0x00, 0x00, 0x09, 0x00, 0x00, 0x00, 0x4a, 0x00, 0x00, 0x00, 0x00,
+            ],
+            1,
+        );
+        let want = Chacha {
+            state: State {
+                x: [
+                    0x61707865, 0x3320646e, 0x79622d32, 0x6b206574, 0x03020100, 0x07060504,
+                    0x0b0a0908, 0x0f0e0d0c, 0x13121110, 0x17161514, 0x1b1a1918, 0x1f1e1d1c,
+                    0x00000001, 0x09000000, 0x4a000000, 0x00000000,
+                ],
+            },
+        };
+        assert_eq!(c.state.x, want.state.x);
     }
 }
