@@ -1,12 +1,12 @@
 use byteorder::ByteOrder;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-struct State {
+pub struct State {
     x: [u32; 16],
 }
 
 impl State {
-    fn new(key: [u8; 32], nonce: [u8; 12], counter: u32) -> Self {
+    pub fn new(key: [u8; 32], nonce: [u8; 12], counter: u32) -> Self {
         // TODO change args type to reference
         let tkey: [u32; 8] = unsafe { std::mem::transmute(key) };
         let tnonce: [u32; 3] = unsafe { std::mem::transmute(nonce) };
@@ -54,7 +54,7 @@ impl State {
         }
     }
 
-    fn block(&mut self) -> [u8; 64] {
+    pub fn block(&mut self) -> [u8; 64] {
         let mut state = self.clone();
         for _ in 0..10 {
             state.inner_block();
