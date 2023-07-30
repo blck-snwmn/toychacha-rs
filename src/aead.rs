@@ -1,3 +1,5 @@
+use std::io::{Cursor, Seek, SeekFrom, Write};
+
 use crate::{chacha, poly};
 
 pub struct ToyAEAD {
@@ -18,28 +20,26 @@ impl ToyAEAD {
         cc.encrypt(ciphertext, 1);
 
         let aad_size = calc_pad_size(aad.len());
+        let pad_aad_size = aad_size - aad.len();
+
         let ciphertext_size = calc_pad_size(ciphertext.len());
+        let pad_ciphertext_size = ciphertext_size - ciphertext.len();
 
-        let mut mac_data: Vec<u8> = vec![0u8; aad_size + ciphertext_size + 8 + 8];
+        let mac_data: Vec<u8> = vec![0u8; aad_size + ciphertext_size + 8 + 8];
+        let mut cur = Cursor::new(mac_data);
 
-        let mut start = 0;
-        let mut end = aad.len();
+        cur.write_all(aad).unwrap();
+        cur.seek(SeekFrom::Current(pad_aad_size as i64)).unwrap();
 
-        mac_data[start..end].copy_from_slice(aad);
+        cur.write_all(ciphertext).unwrap();
+        cur.seek(SeekFrom::Current(pad_ciphertext_size as i64))
+            .unwrap();
 
-        start += aad_size;
-        end = start + ciphertext.len();
-        mac_data[start..end].copy_from_slice(ciphertext);
+        cur.write_all(&(aad.len() as u64).to_le_bytes()).unwrap();
+        cur.write_all(&(ciphertext.len() as u64).to_le_bytes())
+            .unwrap();
 
-        start += ciphertext_size;
-        end = start + 8;
-        mac_data[start..end].copy_from_slice(&(aad.len() as u64).to_le_bytes());
-
-        start += 8;
-        end = start + 8;
-        mac_data[start..end].copy_from_slice(&(ciphertext.len() as u64).to_le_bytes());
-
-        poly::mac(otk, &mac_data)
+        poly::mac(otk, cur.get_ref())
     }
 }
 
