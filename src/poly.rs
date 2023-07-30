@@ -6,7 +6,7 @@ const CLAMPER: [u8; 16] = [
     0x0f, 0xff, 0xff, 0xfc, 0x0f, 0xff, 0xff, 0xfc, 0x0f, 0xff, 0xff, 0xfc, 0x0f, 0xff, 0xff, 0xff,
 ];
 
-fn mac(key: [u8; 32], msg: &[u8]) -> [u8; 16] {
+pub fn mac(key: [u8; 32], msg: &[u8]) -> [u8; 16] {
     let p = BigUint::from(1u8);
     let p = p << 130;
     let p: BigUint = p - 5u8;
