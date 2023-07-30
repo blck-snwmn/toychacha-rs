@@ -109,7 +109,7 @@ impl ChaCha20 {
         let mut hp = plaintext;
 
         while !hp.is_empty() {
-            let mut state = State::new(self.key, self.nonce, counter);
+            let mut state = State::new(self.key, self.nonce, counter); // TODO reuse state
             let block = state.block();
 
             let len = std::cmp::min(hp.len(), 64);
