@@ -12,7 +12,7 @@ impl ToyAEAD {
     }
 
     pub fn seal(&self, nonce: [u8; 12], plaintext: &mut [u8], aad: &[u8]) -> [u8; 16] {
-        let otk = poly::gen_key(self.key, nonce);
+        let otk = poly::generate_key(self.key, nonce);
 
         let cc = chacha::ChaCha20::new(self.key, nonce);
 

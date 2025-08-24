@@ -70,7 +70,7 @@ The library consists of three main cryptographic components that work together:
 2. **Poly1305 MAC (`src/poly.rs`)** 
    - Private module implementing Poly1305 message authentication
    - Uses `num::BigUint` for large integer arithmetic
-   - `gen_key` function derives Poly1305 keys from ChaCha20
+   - `generate_key` function derives Poly1305 keys from ChaCha20
    - `mac` function computes authentication tags
 
 3. **AEAD Integration (`src/aead.rs`)**
