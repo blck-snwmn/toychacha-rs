@@ -44,7 +44,7 @@ impl ToyAEAD {
 }
 
 fn calc_pad_size(size: usize) -> usize {
-    (size + 15) / 16 * 16
+    size.div_ceil(16) * 16
 }
 
 #[cfg(test)]
