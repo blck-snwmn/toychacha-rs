@@ -5,29 +5,19 @@ pub struct State {
 
 impl State {
     pub fn new(key: &[u8; 32], nonce: &[u8; 12], counter: u32) -> Self {
-        let mut tkey = [0u32; 8];
-        for i in 0..8 {
-            let bytes = [key[4 * i], key[4 * i + 1], key[4 * i + 2], key[4 * i + 3]];
-            tkey[i] = u32::from_le_bytes(bytes);
-        }
+        let key_u32 = bytes_to_u32_array::<32, 8>(key);
+        let nonce_u32 = bytes_to_u32_array::<12, 3>(nonce);
+        Self::from_u32(&key_u32, &nonce_u32, counter)
+    }
 
-        let mut tnonce = [0u32; 3];
-        for i in 0..3 {
-            let bytes = [
-                nonce[4 * i],
-                nonce[4 * i + 1],
-                nonce[4 * i + 2],
-                nonce[4 * i + 3],
-            ];
-            tnonce[i] = u32::from_le_bytes(bytes);
-        }
-
+    pub fn from_u32(key_u32: &[u32; 8], nonce_u32: &[u32; 3], counter: u32) -> Self {
         State {
             x: [
                 0x61707865, 0x3320646e, 0x79622d32, 0x6b206574, // constants
-                tkey[0], tkey[1], tkey[2], tkey[3], tkey[4], tkey[5], tkey[6], tkey[7], // key
-                counter, //counter
-                tnonce[0], tnonce[1], tnonce[2], // nonce
+                key_u32[0], key_u32[1], key_u32[2], key_u32[3], 
+                key_u32[4], key_u32[5], key_u32[6], key_u32[7], // key
+                counter, // counter
+                nonce_u32[0], nonce_u32[1], nonce_u32[2], // nonce
             ],
         }
     }
