@@ -108,13 +108,15 @@ fn quarter_round(a: u32, b: u32, c: u32, d: u32) -> (u32, u32, u32, u32) {
 }
 
 pub struct ChaCha20 {
-    key: [u8; 32],
-    nonce: [u8; 12],
+    key_u32: [u32; 8],
+    nonce_u32: [u32; 3],
 }
 
 impl ChaCha20 {
     pub fn new(key: [u8; 32], nonce: [u8; 12]) -> Self {
-        ChaCha20 { key, nonce }
+        let key_u32 = bytes_to_u32_array::<32, 8>(&key);
+        let nonce_u32 = bytes_to_u32_array::<12, 3>(&nonce);
+        ChaCha20 { key_u32, nonce_u32 }
     }
 
     pub fn encrypt(&self, plaintext: &mut [u8], counter: u32) {
@@ -123,7 +125,7 @@ impl ChaCha20 {
         let mut hp = plaintext;
 
         while !hp.is_empty() {
-            let state = State::new(&self.key, &self.nonce, counter); // TODO reuse state
+            let state = State::from_u32(&self.key_u32, &self.nonce_u32, counter);
             let block = state.block();
 
             let len = std::cmp::min(hp.len(), 64);
