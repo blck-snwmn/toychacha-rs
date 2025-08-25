@@ -89,10 +89,10 @@ plaintext → ChaCha20 encrypt → ciphertext
 
 ### Key Implementation Details
 
-- Uses `unsafe` code with `std::mem::transmute` for byte array conversions (educational purposes only)
+- Uses safe Rust standard library methods for byte array conversions (`to_le_bytes`, `from_le_bytes`)
 - Comprehensive RFC test vectors validate correctness
 - All cryptographic constants follow RFC specifications exactly
-- Endianness is handled explicitly using `byteorder` crate
+- Endianness is handled using standard library little-endian conversion methods
 
 ## Testing Strategy
 

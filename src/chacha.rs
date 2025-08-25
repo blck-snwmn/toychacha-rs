@@ -1,5 +1,3 @@
-use byteorder::ByteOrder;
-
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct State {
     x: [u32; 16],
@@ -8,8 +6,23 @@ pub struct State {
 impl State {
     pub fn new(key: [u8; 32], nonce: [u8; 12], counter: u32) -> Self {
         // TODO change args type to reference
-        let tkey: [u32; 8] = unsafe { std::mem::transmute(key) };
-        let tnonce: [u32; 3] = unsafe { std::mem::transmute(nonce) };
+        let mut tkey = [0u32; 8];
+        for i in 0..8 {
+            let bytes = [key[4 * i], key[4 * i + 1], key[4 * i + 2], key[4 * i + 3]];
+            tkey[i] = u32::from_le_bytes(bytes);
+        }
+
+        let mut tnonce = [0u32; 3];
+        for i in 0..3 {
+            let bytes = [
+                nonce[4 * i],
+                nonce[4 * i + 1],
+                nonce[4 * i + 2],
+                nonce[4 * i + 3],
+            ];
+            tnonce[i] = u32::from_le_bytes(bytes);
+        }
+
         State {
             x: [
                 0x61707865, 0x3320646e, 0x79622d32, 0x6b206574, // constants
@@ -67,7 +80,8 @@ impl State {
     fn serialize(&self) -> [u8; 64] {
         let mut out = [0u8; 64];
         for i in 0..16 {
-            byteorder::LittleEndian::write_u32(&mut out[4 * i..4 * (i + 1)], self.x[i]);
+            let bytes = self.x[i].to_le_bytes();
+            out[4 * i..4 * (i + 1)].copy_from_slice(&bytes);
         }
         out
     }
