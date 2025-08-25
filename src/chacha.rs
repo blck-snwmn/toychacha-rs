@@ -86,6 +86,17 @@ impl State {
     }
 }
 
+fn bytes_to_u32_array<const N: usize, const M: usize>(bytes: &[u8; N]) -> [u32; M] {
+    debug_assert_eq!(N, M * 4, "Input byte array size must be 4 times the output u32 array size");
+    
+    let mut result = [0u32; M];
+    for i in 0..M {
+        let chunk = [bytes[4 * i], bytes[4 * i + 1], bytes[4 * i + 2], bytes[4 * i + 3]];
+        result[i] = u32::from_le_bytes(chunk);
+    }
+    result
+}
+
 fn rotation_n(n: usize, x: u32) -> u32 {
     (x << n) | (x >> (32 - n))
 }
