@@ -76,7 +76,7 @@ impl State {
     }
 }
 
-fn bytes_to_u32_array<const N: usize, const M: usize>(bytes: &[u8; N]) -> [u32; M] {
+pub(crate) fn bytes_to_u32_array<const N: usize, const M: usize>(bytes: &[u8; N]) -> [u32; M] {
     debug_assert_eq!(N, M * 4, "Input byte array size must be 4 times the output u32 array size");
     
     let mut result = [0u32; M];
