@@ -46,9 +46,7 @@ pub fn mac(key: [u8; 32], msg: &[u8]) -> [u8; 16] {
 
 pub fn generate_key(key: [u8; 32], nonce: [u8; 12]) -> [u8; 32] {
     let counter = 0;
-    let key_u32 = chacha::bytes_to_u32_array::<32, 8>(&key);
-    let nonce_u32 = chacha::bytes_to_u32_array::<12, 3>(&nonce);
-    let s = chacha::State::from_u32(&key_u32, &nonce_u32, counter);
+    let s = chacha::State::new(&key, &nonce, counter);
     let b = s.block();
 
     let mut x = [0u8; 32];

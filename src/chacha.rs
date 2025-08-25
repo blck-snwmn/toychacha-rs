@@ -7,10 +7,19 @@ impl State {
     pub fn new(key: &[u8; 32], nonce: &[u8; 12], counter: u32) -> Self {
         let key_u32 = bytes_to_u32_array::<32, 8>(key);
         let nonce_u32 = bytes_to_u32_array::<12, 3>(nonce);
-        Self::from_u32(&key_u32, &nonce_u32, counter)
+        
+        State {
+            x: [
+                0x61707865, 0x3320646e, 0x79622d32, 0x6b206574, // constants
+                key_u32[0], key_u32[1], key_u32[2], key_u32[3], 
+                key_u32[4], key_u32[5], key_u32[6], key_u32[7], // key
+                counter, // counter
+                nonce_u32[0], nonce_u32[1], nonce_u32[2], // nonce
+            ],
+        }
     }
-
-    pub fn from_u32(key_u32: &[u32; 8], nonce_u32: &[u32; 3], counter: u32) -> Self {
+    
+    fn from_u32(key_u32: &[u32; 8], nonce_u32: &[u32; 3], counter: u32) -> Self {
         State {
             x: [
                 0x61707865, 0x3320646e, 0x79622d32, 0x6b206574, // constants
@@ -76,7 +85,7 @@ impl State {
     }
 }
 
-pub(crate) fn bytes_to_u32_array<const N: usize, const M: usize>(bytes: &[u8; N]) -> [u32; M] {
+fn bytes_to_u32_array<const N: usize, const M: usize>(bytes: &[u8; N]) -> [u32; M] {
     debug_assert_eq!(N, M * 4, "Input byte array size must be 4 times the output u32 array size");
     
     let mut result = [0u32; M];
