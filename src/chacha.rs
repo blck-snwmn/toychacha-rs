@@ -66,10 +66,10 @@ impl State {
         }
     }
 
-    pub fn block(&mut self) -> [u8; 64] {
-        let mut state = self.clone();
+    pub fn block(mut self) -> [u8; 64] {
+        let state = self.clone();
         for _ in 0..10 {
-            state.inner_block();
+            self.inner_block();
         }
         self.add(&state);
 
@@ -122,7 +122,7 @@ impl ChaCha20 {
         let mut hp = plaintext;
 
         while !hp.is_empty() {
-            let mut state = State::new(&self.key, &self.nonce, counter); // TODO reuse state
+            let state = State::new(&self.key, &self.nonce, counter); // TODO reuse state
             let block = state.block();
 
             let len = std::cmp::min(hp.len(), 64);
@@ -231,7 +231,8 @@ mod tests {
 
     #[test]
     fn test_state_block() {
-        let mut c = State::new(
+        // Test vector from RFC 7539 Section 2.3.2
+        let c = State::new(
             &[
                 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d,
                 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b,
@@ -244,15 +245,7 @@ mod tests {
         );
         let out = c.block();
 
-        let want = State {
-            x: [
-                0xe4e7f110, 0x15593bd1, 0x1fdd0f50, 0xc47120a3, 0xc7f4d1c7, 0x0368c033, 0x9aaa2204,
-                0x4e6cd4c3, 0x466482d2, 0x09aa9f07, 0x05d7c214, 0xa2028bd9, 0xd19c12b5, 0xb94e16de,
-                0xe883d0cb, 0x4e3c50a2,
-            ],
-        };
-        assert_eq!(c.x, want.x);
-
+        // Expected keystream output
         let want = [
             0x10, 0xf1, 0xe7, 0xe4, 0xd1, 0x3b, 0x59, 0x15, 0x50, 0x0f, 0xdd, 0x1f, 0xa3, 0x20,
             0x71, 0xc4, 0xc7, 0xd1, 0xf4, 0xc7, 0x33, 0xc0, 0x68, 0x03, 0x04, 0x22, 0xaa, 0x9a,
