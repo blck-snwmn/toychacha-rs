@@ -1,5 +1,3 @@
-use std::io::{Cursor, Seek, SeekFrom, Write};
-
 use crate::{chacha, poly};
 
 pub struct ToyAEAD {
@@ -19,27 +17,23 @@ impl ToyAEAD {
         let ciphertext = plaintext;
         cc.encrypt(ciphertext, 1);
 
-        let aad_size = calc_pad_size(aad.len());
-        let pad_aad_size = aad_size - aad.len();
+        // Calculate padded sizes
+        let aad_padded = calc_pad_size(aad.len());
+        let ct_padded = calc_pad_size(ciphertext.len());
+        let total_size = aad_padded + ct_padded + 16; // 8 + 8 for lengths
 
-        let ciphertext_size = calc_pad_size(ciphertext.len());
-        let pad_ciphertext_size = ciphertext_size - ciphertext.len();
+        // Allocate once with zero initialization (handles padding)
+        let mut mac_data = vec![0u8; total_size];
 
-        let mac_data: Vec<u8> = vec![0u8; aad_size + ciphertext_size + 8 + 8];
-        let mut cur = Cursor::new(mac_data);
+        // Direct copy (padding areas remain zero)
+        mac_data[..aad.len()].copy_from_slice(aad);
+        mac_data[aad_padded..aad_padded + ciphertext.len()].copy_from_slice(ciphertext);
+        mac_data[aad_padded + ct_padded..aad_padded + ct_padded + 8]
+            .copy_from_slice(&(aad.len() as u64).to_le_bytes());
+        mac_data[aad_padded + ct_padded + 8..]
+            .copy_from_slice(&(ciphertext.len() as u64).to_le_bytes());
 
-        cur.write_all(aad).unwrap();
-        cur.seek(SeekFrom::Current(pad_aad_size as i64)).unwrap();
-
-        cur.write_all(ciphertext).unwrap();
-        cur.seek(SeekFrom::Current(pad_ciphertext_size as i64))
-            .unwrap();
-
-        cur.write_all(&(aad.len() as u64).to_le_bytes()).unwrap();
-        cur.write_all(&(ciphertext.len() as u64).to_le_bytes())
-            .unwrap();
-
-        poly::mac(otk, cur.get_ref())
+        poly::mac(otk, &mac_data)
     }
 }
 
