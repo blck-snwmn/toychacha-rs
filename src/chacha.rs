@@ -127,8 +127,8 @@ fn bytes_to_u32_array<const N: usize, const M: usize>(bytes: &[u8; N]) -> [u32; 
     result
 }
 
-fn rotation_n(n: usize, x: u32) -> u32 {
-    (x << n) | (x >> (32 - n))
+fn rotation_n(n: u32, x: u32) -> u32 {
+    x.rotate_left(n)
 }
 
 fn quarter_round(a: u32, b: u32, c: u32, d: u32) -> (u32, u32, u32, u32) {
