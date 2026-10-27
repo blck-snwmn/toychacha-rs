@@ -12,7 +12,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - run: cargo test --all-features
+      - run: cargo test --locked --all-features
 
   format:
     name: cargo fmt
@@ -30,4 +30,4 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - run: cargo clippy -- -D warnings
+      - run: cargo clippy --locked -- -D warnings
